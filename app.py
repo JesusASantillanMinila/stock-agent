@@ -3,10 +3,12 @@ import json
 import time
 from dotenv import load_dotenv
 import streamlit as st
+import altair as alt
 import yfinance as yf
 from ddgs import DDGS
 from google import genai
 from google.genai import types
+
 
 # ==========================================
 # 1. PAGE CONFIG & STYLING
@@ -329,7 +331,18 @@ if "active_ticker" in st.session_state:
             st.write("**1-Year Price History ($)**")
             history = st.session_state.get("price_history")
             if history is not None and not history.empty:
-                st.line_chart(history, use_container_width=True)
+                # Reset index so 'Date' is a standard column for Altair
+                chart_data = history.reset_index()
+        
+                # Build chart with zero=False to dynamically scale the y-axis
+                chart = alt.Chart(chart_data).mark_line(color='#1c83e1', strokeWidth=2).encode(
+                    x=alt.X('Date:T', title=None, axis=alt.Axis(format='%b %Y')),
+                    y=alt.Y('Close:Q', title='Price ($)', scale=alt.Scale(zero=False)),
+                    tooltip=[alt.Tooltip('Date:T', format='%Y-%m-%d'), alt.Tooltip('Close:Q', format='$.2f')]
+                ).interactive()
+                
+                st.altair_chart(chart, use_container_width=True)
+                # st.line_chart(history, use_container_width=True)
             else:
                 st.info("Chart data unavailable.")
                 
