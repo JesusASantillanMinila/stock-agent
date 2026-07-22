@@ -90,22 +90,36 @@ def safe_generate_content(prompt: str, primary_model: str = "gemini-3.5-flash", 
 # ==========================================
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_recent_news(ticker: str, max_results: int = 5) -> str:
-    """Fetches news via DuckDuckGo with Yahoo Finance fallback. Cached for 1 hour."""
+    """Fetches news via DuckDuckGo with a schema-robust Yahoo Finance fallback."""
     results = []
+    
+    # 1. Try DuckDuckGo
     try:
         query = f"{ticker} stock finance market news"
         with DDGS() as ddgs:
             for r in ddgs.news(query, max_results=max_results):
-                results.append(f"Title: {r.get('title', 'No Title')}\nSummary: {r.get('body', '')}\nSource: {r.get('source', r.get('url', 'Unknown'))}\n---")
+                title = r.get('title', 'No Title')
+                summary = r.get('body', '')
+                source = r.get('source', r.get('url', 'Unknown'))
+                results.append(f"Title: {title}\nSummary: {summary}\nSource: {source}\n---")
     except Exception:
-        pass
+        pass  # Silently drops to Yahoo Finance if DDGS rate-limits
 
+    # 2. Fallback to Yahoo Finance (Updated for new nested schema)
     if not results:
         try:
             stock = yf.Ticker(ticker)
             for r in stock.news[:max_results]:
-                summary = r.get('summary', r.get('content', {}).get('summary', 'No summary available.'))
-                results.append(f"Title: {r.get('title', 'No Title')}\nSummary: {summary}\nSource: {r.get('publisher', 'Yahoo Finance')}\n---")
+                content = r.get('content', {})
+                
+                # Check top-level first, fall back to nested 'content' dict
+                title = r.get('title') or content.get('title', 'No Title')
+                summary = r.get('summary') or content.get('summary', 'No summary available.')
+                
+                # Dig safely for publisher name
+                publisher = r.get('publisher') or content.get('provider', {}).get('displayName', 'Yahoo Finance')
+                
+                results.append(f"Title: {title}\nSummary: {summary}\nSource: {publisher}\n---")
         except Exception as e:
             return f"Error: All news tools failed to retrieve data. Reason: {str(e)}"
 
