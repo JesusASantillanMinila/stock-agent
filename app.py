@@ -175,6 +175,8 @@ def run_news_agent(ticker: str, raw_news: str) -> str:
     1. Summarize the overarching market sentiment (Bullish, Bearish, or Neutral).
     2. Identify the top 2-3 key catalysts or risks mentioned in the news.
     3. Keep your analysis concise, objective, and factual.
+
+    Constraint: Maintain a strictly objective, scientific tone in the third person or passive voice. Do not use personal pronouns (I, we, you).
     """
     response = client.models.generate_content(
         model="gemini-3.1-flash-lite",
@@ -197,6 +199,8 @@ def run_quant_agent(ticker: str, metrics_json: str) -> str:
     1. Evaluate the valuation (e.g., is the P/E ratio overvalued or undervalued relative to historical norms?).
     2. Assess the price trend based on the 50-day and 200-day moving averages.
     3. Provide a clear assessment of the company's fundamental strength.
+
+    Constraint: Maintain a strictly objective, scientific tone in the third person or passive voice. Do not use personal pronouns (I, we, you).
     """
     response = client.models.generate_content(
         model="gemini-3.1-flash-lite",
@@ -209,25 +213,31 @@ def run_quant_agent(ticker: str, metrics_json: str) -> str:
 def run_portfolio_manager_agent(ticker: str, news_analysis: str, quant_analysis: str) -> str:
     """Agent 3: Synthesizes research and issues an investment recommendation."""
     prompt = f"""
-    You are the Chief Investment Officer and Lead Portfolio Manager at an elite hedge fund.
-    You have commissioned two independent research reports on ticker symbol: {ticker}.
-    
-    === REPORT 1: NEWS & MARKET SENTIMENT ===
-    {news_analysis}
-    
-    === REPORT 2: QUANTITATIVE & FUNDAMENTAL VALUATION ===
-    {quant_analysis}
-    
-    Task:
-    Weigh the bullish signals against the bearish risks. Provide a comprehensive investment memo structured EXACTLY with the following Markdown headings:
-    
-    # Investment Thesis for {ticker}
-    ## Executive Summary
-    ## Key Bullish Arguments
-    ## Key Risks & Bearish Arguments
-    ## Final Recommendation: [BUY / HOLD / SELL]
-    *(State clearly whether to Buy, Hold, or Sell and explain your time horizon and reasoning).*
-    """
+        You are a Quantitative Research Director publishing an institutional investment thesis for ticker symbol: {ticker}.
+        You have been provided with two independent empirical data reports:
+        
+        === REPORT 1: MACROECONOMIC & SENTIMENT DATA ===
+        {news_analysis}
+        
+        === REPORT 2: QUANTITATIVE & VALUATION METRICS ===
+        {quant_analysis}
+        
+        [STYLE & TONE CONSTRAINTS - STRICT ENFORCEMENT REQUIRED]
+        1. Academic & Scientific Tone: The analysis must be written with the academic rigor, objectivity, and precision of a peer-reviewed financial economics paper.
+        2. Third-Person & Passive Voice Only: All assertions, evaluations, and conclusions must be framed in the third person or passive voice (e.g., "It is observed that...", "The data indicates...", "A valuation anomaly is present...").
+        3. Absolute Pronoun Ban: Do NOT use first- or second-person pronouns under any circumstances. Forbidden words include: I, me, my, we, our, us, you, your.
+        4. Evidential Framing: Base all conclusions strictly on the provided reports. Avoid speculative language; use probabilistic and empirical framing (e.g., "Historical momentum suggests..." rather than "The stock will probably go up...").
+        
+        [TASK & OUTPUT STRUCTURE]
+        Synthesize the provided reports into a formal research memorandum. Format the output EXACTLY using the following Markdown structure:
+        
+        # Empirical Investment Thesis: {ticker}
+        ## Abstract & Executive Summary
+        ## Key Bullish Catalysts & Positive Expectancies
+        ## Downside Risks & Macroeconomic Headwinds
+        ## Final Rating & Strategic Allocation: [BUY / HOLD / SELL]
+        *(Provide a definitive BUY, HOLD, or SELL rating, followed by an objective, third-person justification of the time horizon and risk-adjusted return expectations).*
+        """
     return safe_generate_content(prompt=prompt, primary_model="gemini-3.5-flash", fallback_model="gemini-3.1-flash-lite")
 
 # ==========================================
@@ -309,7 +319,7 @@ if "active_ticker" in st.session_state:
         
     # Tabbed Content Sections
 # Tabbed Content Sections
-    tab1, tab2, tab3, tab4 = st.tabs(["📝 Investment Memo (CIO)", "📰 Sentiment Agent", "📈 Valuation Agent", "🔍 Raw Data Feed"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📝 Investment Memo", "📰 Sentiment Agent", "📈 Valuation Agent", "🔍 Raw Data Feed"])
     
     with tab1:
         # Escape dollar signs so Streamlit doesn't turn them into math equations
