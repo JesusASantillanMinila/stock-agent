@@ -298,8 +298,8 @@ if "active_ticker" in st.session_state:
     # Top KPI Metrics Bar
     if "error" not in metrics:
         st.subheader(f"📊 {metrics.get('Company Name', ticker)} — Snapshot")
-        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-        
+        # m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+        m_col1, m_col2, m_col3 = st.columns(3)
         with m_col1:
             price = metrics.get('Current Price', 'N/A')
             st.metric(label="Current Price", value=f"${price:,.2f}" if isinstance(price, (int, float)) else price)
@@ -313,8 +313,8 @@ if "active_ticker" in st.session_state:
             else:
                 mcap_str = mcap
             st.metric(label="Market Cap", value=mcap_str)
-        with m_col4:
-            st.metric(label="Analyst Consensus", value=metrics.get('Analyst Rec', 'N/A'))
+        # with m_col4:
+        #     st.metric(label="Analyst Consensus", value=metrics.get('Analyst Rec', 'N/A'))
         st.write("")
         
     # Tabbed Content Sections
