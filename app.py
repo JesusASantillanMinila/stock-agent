@@ -269,11 +269,11 @@ if execute_btn:
             raw_news = get_recent_news(ticker_input)
             news_report = run_news_agent(ticker_input, raw_news)
             
-            st.write("📈 **Agent 2:** Pulling financial balance sheets & technical moving averages...")
+            st.write("📈 **Agent 2:** Pulling financial balance sheets & technical metrics...")
             metrics_dict = get_fundamental_data(ticker_input)
             quant_report = run_quant_agent(ticker_input, json.dumps(metrics_dict, indent=2))
             
-            st.write("👔 **Agent 3:** Chief Investment Officer synthesizing research into final thesis...")
+            st.write("📚 **Agent 3:** Synthesizing research into final thesis...")
             final_memo = run_portfolio_manager_agent(ticker_input, news_report, quant_report)
             
             # Save all outputs to Session State so switching tabs won't clear results
