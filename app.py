@@ -13,7 +13,7 @@ from google.genai import types
 # 1. PAGE CONFIG & STYLING
 # ==========================================
 st.set_page_config(
-    page_title="AI Hedge Fund | Multi-Agent Stock Analyst",
+    page_title="Multi-Agent Stock Analysis",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -242,7 +242,7 @@ def run_portfolio_manager_agent(ticker: str, news_analysis: str, quant_analysis:
 # ==========================================
 # 4. USER INTERFACE
 # ==========================================
-st.markdown('<div class="main-title">🤖 AI Hedge Fund Analyst</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">Multi-Agent Stock Analysis</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">A Multi-Agent AI system synthesizing live news sentiment and quantitative valuation into institutional-grade investment memos.</div>', unsafe_allow_html=True)
 
 # Expander Configuration at the Top
@@ -286,9 +286,6 @@ with st.expander("⚙️ Configuration & Input", expanded=True):
             ticker_input = selected_option.split(" - ")[0]
 
     with col2:
-        st.write("") # Spacing
-        st.write("") # Spacing
-        # Add extra spacing to align the button properly if the custom text input pushes col1 down
         if selected_option == "+ Add Custom Ticker":
             st.write("") 
             st.write("")
