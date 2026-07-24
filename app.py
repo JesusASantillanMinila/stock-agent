@@ -9,7 +9,6 @@ from ddgs import DDGS
 from google import genai
 from google.genai import types
 
-
 # ==========================================
 # 1. PAGE CONFIG & STYLING
 # ==========================================
@@ -249,17 +248,56 @@ st.markdown('<div class="sub-title">A Multi-Agent AI system synthesizing live ne
 # Expander Configuration at the Top
 with st.expander("⚙️ Configuration & Input", expanded=True):
     col1, col2 = st.columns([3, 1])
+    
     with col1:
-        ticker_input = st.text_input("Enter Stock Ticker Symbol:", value="NVDA", max_chars=10, help="e.g., AAPL, NVDA, TSLA, MSFT").upper().strip()
+        # Load the SEC List from the new sec_list folder
+        file_path = os.path.join("sec_list", "SEC_List.json")
+        try:
+            with open(file_path, "r") as f:
+                sec_list = json.load(f)
+        except FileNotFoundError:
+            # Fallback list just in case the script hasn't been run
+            sec_list = [""]
+            st.warning("⚠️ SEC Ticker list unavailable. Please enter your ticker manually.")
+            
+        # Create searchable options by combining custom option with the SEC list
+        options = ["+ Add Custom Ticker"] + sec_list
+        
+        # Find default index for NVDA to maintain original behavior
+        default_index = 0
+        for i, opt in enumerate(options):
+            if opt.startswith("NVDA -"):
+                default_index = i
+                break
+                
+        # The searchable dropdown
+        selected_option = st.selectbox(
+            "Search and Select a Company:", 
+            options=options, 
+            index=default_index,
+            help="Type to search for a company, or select '+ Add Custom Ticker' to enter one manually."
+        )
+        
+        # Handle the conditional rendering of the custom input box
+        if selected_option == "+ Add Custom Ticker":
+            ticker_input = st.text_input("Enter Custom Ticker Symbol:", value="").upper().strip()
+        else:
+            # Split the string and grab just the ticker before the hyphen
+            ticker_input = selected_option.split(" - ")[0]
+
     with col2:
         st.write("") # Spacing
         st.write("") # Spacing
+        # Add extra spacing to align the button properly if the custom text input pushes col1 down
+        if selected_option == "+ Add Custom Ticker":
+            st.write("") 
+            st.write("")
         execute_btn = st.button("🚀 Run Analysis", type="primary", use_container_width=True)
 
 # Ensure results ONLY appear after execution button is clicked
 if execute_btn:
     if not ticker_input:
-        st.warning("⚠️ Please enter a valid stock ticker symbol.")
+        st.warning("⚠️ Please enter or select a valid stock ticker symbol.")
     else:
         st.session_state["active_ticker"] = ticker_input
         
@@ -298,7 +336,6 @@ if "active_ticker" in st.session_state:
     # Top KPI Metrics Bar
     if "error" not in metrics:
         st.subheader(f"📊 {metrics.get('Company Name', ticker)} — Snapshot")
-        # m_col1, m_col2, m_col3, m_col4 = st.columns(4)
         m_col1, m_col2, m_col3 = st.columns(3)
         with m_col1:
             price = metrics.get('Current Price', 'N/A')
@@ -313,12 +350,9 @@ if "active_ticker" in st.session_state:
             else:
                 mcap_str = mcap
             st.metric(label="Market Cap", value=mcap_str)
-        # with m_col4:
-        #     st.metric(label="Analyst Consensus", value=metrics.get('Analyst Rec', 'N/A'))
         st.write("")
         
     # Tabbed Content Sections
-# Tabbed Content Sections
     tab1, tab2, tab3, tab4 = st.tabs(["📝 Investment Memo", "📰 Sentiment Agent", "📈 Valuation Agent", "🔍 Raw Data Feed"])
     
     with tab1:
@@ -352,7 +386,6 @@ if "active_ticker" in st.session_state:
                 ).interactive()
                 
                 st.altair_chart(chart, use_container_width=True)
-                # st.line_chart(history, use_container_width=True)
             else:
                 st.info("Chart data unavailable.")
                 
