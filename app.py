@@ -82,9 +82,9 @@ def safe_generate_content(prompt: str, primary_model: str = "gemini-3.5-flash", 
             contents=prompt,
             config=types.GenerateContentConfig(temperature=0.2)
         )
-        return response.text + "\n\n*(Note: Generated using backup model due to high server demand)*"
+        return response.text
     except Exception as fallback_error:
-        return f"CRITICAL ERROR: Both primary and fallback models failed. Details: {str(fallback_error)}"
+        return f"CRITICAL ERROR: AI Agents failed. Details: {str(fallback_error)}"
 
 # ==========================================
 # 3. CACHED DATA & AGENT FUNCTIONS
@@ -246,7 +246,7 @@ st.markdown('<div class="main-title">Multi-Agent Stock Analysis</div>', unsafe_a
 st.markdown('<div class="sub-title">A Multi-Agent AI system synthesizing live news sentiment and quantitative valuation into institutional-grade investment memos.</div>', unsafe_allow_html=True)
 
 # Expander Configuration at the Top
-with st.expander("⚙️ Configuration & Input", expanded=True):
+with st.expander("🔎 Search", expanded=True):
     col1, col2 = st.columns([3, 1])
     
     with col1:
@@ -258,7 +258,7 @@ with st.expander("⚙️ Configuration & Input", expanded=True):
         except FileNotFoundError:
             # Fallback list just in case the script hasn't been run
             sec_list = [""]
-            st.warning("⚠️ SEC Ticker list unavailable. Please enter your ticker manually.")
+            st.warning("⚠️ SEC ticker list unavailable. Please enter your ticker manually.")
             
         # Create searchable options by combining custom option with the SEC list
         options = ["+ Add Custom Ticker"] + sec_list
